@@ -1,13 +1,22 @@
 import requests
 import sys
+import time
 from colorama import init, Fore, Style
 import os
+
+pasvoulu1 = ' " '
+pasvoulu2 = "', :`@"
+pasvoulu = pasvoulu1 + pasvoulu2
 
 
 try:
     import requests
     from colorama import init, Fore, Style
+    print("Everything needed is loaded")
+    time.sleep(2)
 except ImportError:
+    print("Installation of requirements")
+    time.sleep(1)
     os.system('pip install requests')
     os.system('pip install colorama')
 
@@ -22,25 +31,31 @@ os.system('cls' if os.name == 'nt' else 'clear')
 # Initialisation de colorama
 init(autoreset=True)
 
-def verifier_disponibilite_pseudo(url, pseudo):
+def verif(url, pseudo):
     try:
         response = requests.get(url + pseudo)
         if response.status_code == 404:
-            print(f"{Fore.RED}{url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
+            print(f"{Fore.RED}(-) {url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
             return url.split('//')[-1].split('/')[0]
         else:
-            print(f"{Fore.GREEN}{url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}(+) {url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
     except requests.RequestException as e:
-        print(f"{Fore.YELLOW}{url.split('//')[-1].split('/')[0]} (Erreur de connexion){Style.RESET_ALL}")  # Nom du site en orange
+        print(f"{Fore.YELLOW}(~){url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
 
 # Exemple d'utilisation avec des liens
 liens = [
     "https://www.instagram.com/",
     "https://www.tiktok.com/@",
+    "https://www.github.com/",
+    "https://www.facebook.com/",
+    "https://www.threads.net/@",
+    "https://www.pinterest.fr/",
+    "https://twitter.com/",
+    "https://www.reddit.com/user/",
     # Ajoutez d'autres liens ici
 ]
 
-art = f"""███▄    █  ▄▄▄       ███▄ ▄███▓▓█████     ▄████▄   ██░ ██ ▓█████  ▄████▄   ██ ▄█▀▓█████  ██▀███
+art = f"""{Fore.MAGENTA}███▄    █  ▄▄▄       ███▄ ▄███▓▓█████     ▄████▄   ██░ ██ ▓█████  ▄████▄   ██ ▄█▀▓█████  ██▀███
  ██ ▀█   █ ▒████▄    ▓██▒▀█▀ ██▒▓█   ▀    ▒██▀ ▀█  ▓██░ ██▒▓█   ▀ ▒██▀ ▀█   ██▄█▒ ▓█   ▀ ▓██ ▒ ██▒
 ▓██  ▀█ ██▒▒██  ▀█▄  ▓██    ▓██░▒███      ▒▓█    ▄ ▒██▀▀██░▒███   ▒▓█    ▄ ▓███▄░ ▒███   ▓██ ░▄█ ▒
 ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██    ▒██ ▒▓█  ▄    ▒▓▓▄ ▄██▒░▓█ ░██ ▒▓█  ▄ ▒▓▓▄ ▄██▒▓██ █▄ ▒▓█  ▄ ▒██▀▀█▄  
@@ -49,28 +64,36 @@ art = f"""███▄    █  ▄▄▄       ███▄ ▄███▓▓�
 ░ ░░   ░ ▒░  ▒   ▒▒ ░░  ░      ░ ░ ░  ░     ░  ▒    ▒ ░▒░ ░ ░ ░  ░  ░  ▒   ░ ░▒ ▒░ ░ ░  ░  ░▒ ░ ▒░
    ░   ░ ░   ░   ▒   ░      ░      ░      ░         ░  ░░ ░   ░   ░        ░ ░░ ░    ░     ░░   ░ 
          ░       ░  ░       ░      ░  ░   ░ ░       ░  ░  ░   ░  ░░ ░      ░  ░      ░  ░   ░     
-                                          ░                       ░                               
-                                          """
+                                          ░                       ░                               """
 
 print(art)
+print(f"{Fore.MAGENTA}By Quelqu'un \n\n")
 
 
 def pseudo_entré():
     return input("Name : ")
     
+while True:
+    
+    pseudo_a_verifier = pseudo_entré()
 
-pseudo_a_verifier = pseudo_entré()
+    disponibles = []
 
-disponibles = []
+
+
+    if any(c in pasvoulu for c in pseudo_a_verifier):
+        print("Error : The name contains unwanted characters")
+        time.sleep(0.5)
+    elif len(pseudo_a_verifier) < 2:
+        print("Error: The name is too short. Please enter at least 2 characters.")
+        time.sleep(0.5)
+    else:
+        break
 
 for lien in liens:
-    disponible = verifier_disponibilite_pseudo(lien, pseudo_a_verifier)
+    disponible = verif(lien, pseudo_a_verifier)
     if disponible:
         disponibles.append(disponible)
-
-if disponibles:
-    print(f"Le pseudo '{pseudo_a_verifier}' est libre sur les sites suivants :")
-    for site in disponibles:
-        print(site)
-else:
-    print(f"Le pseudo '{pseudo_a_verifier}' n'est pas libre sur ces sites.")
+print(f"\n\n{Fore.GREEN}(+) Name used")
+print(f"{Fore.RED}(-) Name not used")
+print(f"{Fore.YELLOW}(~) Connection Error")
