@@ -4,8 +4,8 @@ import time
 from colorama import init, Fore, Style
 import os
 
-pasvoulu1 = ' " '
-pasvoulu2 = "', :`@"
+pasvoulu1 = '"'
+pasvoulu2 = "', :`@!"
 pasvoulu = pasvoulu1 + pasvoulu2
 
 
@@ -32,11 +32,19 @@ os.system('cls' if os.name == 'nt' else 'clear')
 init(autoreset=True)
 
 def verif(url, pseudo):
+    not_available_phrases = {
+        "this page is unfortunately not available",
+        "This account cannot be found",
+    }
+    
     try:
         response = requests.get(url + pseudo)
+        texterror = response.text.lower()
         if response.status_code == 404:
             print(f"{Fore.RED}(-) {url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
             return url.split('//')[-1].split('/')[0]
+        elif any(phrase in texterror for phrase in not_available_phrases):
+            print(f"{Fore.RED}(-) {url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
         else:
             print(f"{Fore.GREEN}(+) {url.split('//')[-1].split('/')[0]}{Style.RESET_ALL}")
     except requests.RequestException as e:
@@ -83,9 +91,6 @@ while True:
 
     if any(c in pasvoulu for c in pseudo_a_verifier):
         print("Error : The name contains unwanted characters")
-        time.sleep(0.5)
-    elif len(pseudo_a_verifier) < 2:
-        print("Error: The name is too short. Please enter at least 2 characters.")
         time.sleep(0.5)
     else:
         break
