@@ -1,0 +1,318 @@
+[
+  {
+    "name": "Instagram",
+    "url": "https://www.instagram.com/{}",
+    "check_type": "message",
+    "error_text": [
+      "page not found",
+      "cette page n",
+      "the link you followed may be broken",
+      "sorry, this page isn't available",
+      "sorry, this page isn't available."
+    ]
+  },
+  {
+    "name": "TikTok",
+    "url": "https://www.tiktok.com/@{}",
+    "check_type": "status_code",
+    "error_code": 404,
+    "error_text": [
+      "couldn't find this account",
+      "user not found",
+      "page not found"
+    ]
+  },
+  {
+    "name": "GitHub",
+    "url": "https://www.github.com/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Facebook",
+    "url": "https://www.facebook.com/{}",
+    "check_type": "message",
+    "error_text": [
+      "this content is not available",
+      "ce contenu n'est pas disponible",
+      "page not found",
+      "broken link"
+    ]
+  },
+  {
+    "name": "Threads",
+    "url": "https://www.threads.net/@{}",
+    "check_type": "message",
+    "error_text": [
+      "content not available",
+      "page introuvable",
+      "sorry, this page isn't available",
+      "cette page n"
+    ]
+  },
+  {
+    "name": "Pinterest",
+    "url": "https://www.pinterest.com/{}/",
+    "check_type": "message",
+    "error_text": [
+      "page not found",
+      "user not found"
+    ]
+  },
+  {
+    "name": "Twitter/X",
+    "url": "https://twitter.com/{}",
+    "check_type": "message",
+    "error_text": [
+      "this account doesn",
+      "ce compte n",
+      "page not found"
+    ]
+  },
+  {
+    "name": "Reddit",
+    "url": "https://www.reddit.com/user/{}",
+    "check_type": "message",
+    "error_text": [
+      "sorry, nobody on reddit goes by that name",
+      "page not found",
+      "sorry, we couldn't find that account"
+    ]
+  },
+  {
+    "name": "Twitch",
+    "url": "https://www.twitch.tv/{}",
+    "check_type": "message",
+    "error_text": [
+      "sorry, unless you",
+      "content not available",
+      "machine that doesn't exist"
+    ]
+  },
+  {
+    "name": "YouTube",
+    "url": "https://www.youtube.com/@{}",
+    "check_type": "message",
+    "error_text": [
+      "404 not found",
+      "this page isn't available",
+      "cette page n'est pas disponible"
+    ]
+  },
+  {
+    "name": "Snapchat",
+    "url": "https://www.snapchat.com/add/{}",
+    "check_type": "status_code",
+    "error_code": 404,
+    "error_text": [
+      "content not found"
+    ]
+  },
+  {
+    "name": "Steam",
+    "url": "https://steamcommunity.com/id/{}",
+    "check_type": "message",
+    "error_text": [
+      "the specified profile could not be found",
+      "error"
+    ]
+  },
+  {
+    "name": "SoundCloud",
+    "url": "https://soundcloud.com/{}",
+    "check_type": "status_code",
+    "error_code": 404,
+    "error_text": [
+      "we can't find that user",
+      "not found"
+    ]
+  },
+  {
+    "name": "Patreon",
+    "url": "https://www.patreon.com/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Medium",
+    "url": "https://medium.com/@{}",
+    "check_type": "message",
+    "error_text": [
+      "404",
+      "page not found",
+      "out of nothing, something"
+    ]
+  },
+  {
+    "name": "Dev.to",
+    "url": "https://dev.to/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Vimeo",
+    "url": "https://vimeo.com/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Disqus",
+    "url": "https://disqus.com/by/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "About.me",
+    "url": "https://about.me/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Flipboard",
+    "url": "https://flipboard.com/@{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "SlideShare",
+    "url": "https://www.slideshare.net/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Spotify",
+    "url": "https://open.spotify.com/user/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Pastebin",
+    "url": "https://pastebin.com/u/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Flickr",
+    "url": "https://www.flickr.com/people/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Etsy",
+    "url": "https://www.etsy.com/shop/{}",
+    "check_type": "message",
+    "error_text": [
+      "couldn't find your shop",
+      "404",
+      "page not found"
+    ]
+  },
+  {
+    "name": "Cash.app",
+    "url": "https://cash.app/${}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Behance",
+    "url": "https://www.behance.net/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Dribbble",
+    "url": "https://dribbble.com/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "GoodReads",
+    "url": "https://www.goodreads.com/user/show/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Instructables",
+    "url": "https://www.instructables.com/member/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Keybase",
+    "url": "https://keybase.io/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Kongregate",
+    "url": "https://www.kongregate.com/accounts/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "LiveJournal",
+    "url": "https://{}.livejournal.com",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Last.fm",
+    "url": "https://last.fm/user/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "AngelList",
+    "url": "https://angel.co/{}",
+    "check_type": "message",
+    "error_text": [
+      "404",
+      "page not found"
+    ]
+  },
+  {
+    "name": "ProductHunt",
+    "url": "https://www.producthunt.com/@{}",
+    "check_type": "message",
+    "error_text": [
+      "page not found",
+      "404"
+    ]
+  },
+  {
+    "name": "Telegram",
+    "url": "https://t.me/{}",
+    "check_type": "message",
+    "error_text": [
+      "tgme_page_title",
+      "view in telegram",
+      "preview channel"
+    ]
+  },
+  {
+    "name": "Roblox",
+    "url": "https://www.roblox.com/user.aspx?username={}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Gumroad",
+    "url": "https://www.gumroad.com/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Wikipedia",
+    "url": "https://www.wikipedia.org/wiki/User:{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "HackerNews",
+    "url": "https://news.ycombinator.com/user?id={}",
+    "check_type": "message",
+    "error_text": [
+      "no such user"
+    ]
+  }
+]
