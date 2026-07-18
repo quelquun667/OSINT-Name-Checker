@@ -13,12 +13,13 @@ import json
 import random
 import argparse
 
-from rich.console import Console
+from rich.console import Console, Group
 from rich.table import Table
 from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 from rich.prompt import Prompt, Confirm
+from rich.progress import Progress, BarColumn, TextColumn
 from rich import box
 
 # --- CONFIGURATION ---
@@ -458,6 +459,17 @@ def main():
                     table.add_row(*row_cells)
                 return table
 
+            progress = Progress(
+                TextColumn("[cyan]Progress[/cyan]"),
+                BarColumn(),
+                TextColumn("[cyan]{task.completed}/{task.total} sites[/cyan]"),
+                console=console,
+            )
+            progress_task = progress.add_task("checking", total=len(sites_sorted))
+
+            def render_display():
+                return Group(progress, render_table())
+
             with ThreadPoolExecutor(max_workers=15) as executor:
                 futures = {executor.submit(check_site, site, username_to_check, session): site for site in http_sites}
                 if browser_worker:
@@ -465,7 +477,7 @@ def main():
                         browser_worker.submit(site, username_to_check): site
                         for site in sites if site["name"] in browser_site_names
                     })
-                with Live(render_table(), console=console, refresh_per_second=8) as live:
+                with Live(render_display(), console=console, refresh_per_second=8) as live:
                     for future in as_completed(futures):
                         site_name, status, url = future.result()
                         results_list.append((site_name, status, url))
@@ -478,7 +490,8 @@ def main():
                         else:
                             error_sites.append(site_name)
 
-                        live.update(render_table())
+                        progress.update(progress_task, advance=1)
+                        live.update(render_display())
 
             # Summary
             console.print()
