@@ -287,10 +287,10 @@ def ensure_browser_worker(interactive):
 
     if not interactive:
         console.print(
-            "[yellow]Note: browser components for deep-checking Instagram/Facebook/Reddit/Threads "
+            "[bold red]Note: browser components for deep-checking Instagram/Facebook/Reddit/Threads "
             "aren't installed, so those will show as uncertain. Run 'python main.py' once "
             "(without -u) to set them up, or 'python -m playwright install chromium --only-shell' "
-            "manually.[/yellow]\n"
+            "manually.[/bold red]\n"
         )
         return None
 
