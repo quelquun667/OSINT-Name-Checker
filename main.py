@@ -297,9 +297,13 @@ def ensure_browser_worker(interactive):
     console.print(
         "\n[yellow]Optional: a small headless browser lets this tool give real results for "
         "Instagram, Facebook, Reddit and Threads instead of always reporting them as "
-        "uncertain (~110MB, one-time download).[/yellow]"
+        "uncertain (~110MB, one-time download). Without it, those 4 sites will always show "
+        "as uncertain (~), never found or not found.[/yellow]"
     )
-    if Confirm.ask("[cyan]Download it now?[/cyan]", default=True):
+    if Confirm.ask(
+        "[cyan]Install it now (Y), or continue without it — those sites stay uncertain (N)?[/cyan]",
+        default=True,
+    ):
         with console.status("[cyan]Downloading browser components...[/cyan]"):
             try:
                 subprocess.run(BROWSER_INSTALL_CMD, check=True, capture_output=True)
