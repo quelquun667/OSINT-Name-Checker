@@ -125,18 +125,11 @@ def check_site(site_data, username, session):
 
         # Handle ambiguous cases
         if response.status_code >= 500 or response.status_code == 429:
-            print(f"{Fore.YELLOW}(~) {site_name}: Connection issues (Code {response.status_code}){Style.RESET_ALL}")
             return (site_name, None, full_url)
 
-        if found:
-            print(f"{Fore.GREEN}(+) {site_name}{Style.RESET_ALL}")
-            return (site_name, True, full_url)
-        else:
-            print(f"{Fore.RED}(-) {site_name}{Style.RESET_ALL}")
-            return (site_name, False, full_url)
+        return (site_name, found, full_url)
 
-    except requests.RequestException as e:
-        print(f"{Fore.YELLOW}(~) {site_name}: Error {e}{Style.RESET_ALL}")
+    except requests.RequestException:
         return (site_name, None, full_url)
 
 def clear_screen():
@@ -156,6 +149,33 @@ def print_banner():
     print(art)
     print(f"{Fore.MAGENTA}By Quelqu'un (Remastered)\n\n")
 
+def spinner(message, duration=1.0):
+    frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    end_time = time.time() + duration
+    i = 0
+    while time.time() < end_time:
+        sys.stdout.write(f"\r{Fore.CYAN}{frames[i % len(frames)]} {message}{Style.RESET_ALL}  ")
+        sys.stdout.flush()
+        time.sleep(0.08)
+        i += 1
+    sys.stdout.write("\r" + " " * (len(message) + 4) + "\r")
+    sys.stdout.flush()
+
+def print_status_line(site_name, status, done, total):
+    if status is True:
+        symbol, color = "✔", Fore.GREEN
+    elif status is False:
+        symbol, color = "✘", Fore.RED
+    else:
+        symbol, color = "!", Fore.YELLOW
+    print(f"{color}{Style.BRIGHT}{symbol}{Style.RESET_ALL} {site_name:<16} {Fore.CYAN}[{done:>2}/{total}]{Style.RESET_ALL}")
+
+def print_summary_box(title):
+    width = max(40, len(title) + 4)
+    print(f"\n{Fore.CYAN}{Style.BRIGHT}╔{'═' * width}╗{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{Style.BRIGHT}║{title.center(width)}║{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{Style.BRIGHT}╚{'═' * width}╝{Style.RESET_ALL}")
+
 MAX_LOG_LINES = 5000  # cap on results.txt so it doesn't grow forever
 LOG_TRIM_TARGET = 2000  # lines kept after trimming
 
@@ -169,8 +189,7 @@ def _trim_log_if_needed(filename):
         with open(filename, "w", encoding="utf-8") as f:
             f.writelines(lines[-LOG_TRIM_TARGET:])
 
-def save_results(results, username):
-    filename = "results.txt"
+def save_results(results, username, filename="results.txt"):
     try:
         _trim_log_if_needed(filename)
         with open(filename, "a", encoding="utf-8") as f:
@@ -190,10 +209,23 @@ def save_results(results, username):
 def main():
     parser = argparse.ArgumentParser(description="OSINT Name Checker - Find profiles by username.")
     parser.add_argument("-u", "--username", help="Username to check directly")
+    parser.add_argument("-o", "--output", help="File to save results to (default: results.txt)")
     args = parser.parse_args()
 
     sites = load_sites()
     session = create_session()
+
+    output_file = args.output
+    if not output_file:
+        if args.username:
+            output_file = "results.txt"
+        else:
+            clear_screen()
+            print_banner()
+            answer = input(
+                f"{Fore.CYAN}Save results to file (Enter for default 'results.txt'): {Style.RESET_ALL}"
+            ).strip()
+            output_file = answer if answer else "results.txt"
 
     while True:
         clear_screen()
@@ -215,19 +247,23 @@ def main():
             if args.username: break
             continue
 
-        print(f"\n{Fore.YELLOW}Checking availability for '{username_to_check}' on {len(sites)} sites...{Style.RESET_ALL}\n")
+        spinner(f"Preparing scan for '{username_to_check}'", duration=0.8)
+        print(f"{Fore.YELLOW}Checking availability for '{username_to_check}' on {len(sites)} sites...{Style.RESET_ALL}\n")
 
         results_list = []
         found_sites = []
         available_sites = []
         error_sites = []
+        total_sites = len(sites)
+        done = 0
 
         with ThreadPoolExecutor(max_workers=15) as executor:
             futures = {executor.submit(check_site, site, username_to_check, session): site for site in sites}
             for future in as_completed(futures):
                 site_name, status, url = future.result()
                 results_list.append((site_name, status, url))
-                
+                done += 1
+
                 if status is True:
                     found_sites.append(site_name)
                 elif status is False:
@@ -235,15 +271,15 @@ def main():
                 else:
                     error_sites.append(site_name)
 
+                print_status_line(site_name, status, done, total_sites)
+
         # Summary
-        print(f"\n{Fore.WHITE}{'='*40}{Style.RESET_ALL}")
-        print(f"SUMMARY FOR '{username_to_check}'")
-        print(f"{Fore.WHITE}{'='*40}{Style.RESET_ALL}")
-        
+        print_summary_box(f"SUMMARY FOR '{username_to_check}'")
+
         if found_sites:
-            print(f"{Fore.GREEN}[+] FOUND ACCOUNTS: {len(found_sites)}{Style.RESET_ALL}")
+            print(f"\n{Fore.GREEN}{Style.BRIGHT}[+] FOUND ACCOUNTS: {len(found_sites)}{Style.RESET_ALL}")
             print(f"{Fore.GREEN}{', '.join(found_sites)}{Style.RESET_ALL}")
-        
+
         if available_sites:
             print(f"\n{Fore.RED}[-] NOT FOUND (Available?): {len(available_sites)}{Style.RESET_ALL}")
             # print(f"{Fore.RED}{', '.join(available_sites)}{Style.RESET_ALL}") # Optional: Don't clutter screen if too many
@@ -252,7 +288,7 @@ def main():
              print(f"\n{Fore.YELLOW}[~] ERRORS: {len(error_sites)}{Style.RESET_ALL}")
              print(f"{Fore.YELLOW}{', '.join(error_sites)}{Style.RESET_ALL}")
 
-        save_results(results_list, username_to_check)
+        save_results(results_list, username_to_check, output_file)
 
         if args.username:
             break

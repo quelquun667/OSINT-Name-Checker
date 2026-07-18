@@ -41,13 +41,36 @@ Interactive mode (prompts for a username, lets you check several in a row):
 python main.py
 ```
 
+You'll also be asked which file to save results to (press Enter to keep the default `results.txt`) — useful to avoid mixing results from different sessions into the same log.
+
 Direct / scriptable mode:
 
 ```bash
-python main.py -u <username>
+python main.py -u <username> -o my_report.txt
 ```
 
-Results are printed to the console (color-coded) and appended to `results.txt`.
+- `-u`, `--username`: username to check directly (skips the interactive prompt, runs once, and exits).
+- `-o`, `--output`: file to append results to (default: `results.txt`).
+
+Results are printed to the console (color-coded, with a live progress indicator) and appended to the chosen output file. The log file is automatically trimmed once it grows past 5000 lines, so it won't grow forever.
+
+## Supported sites (41)
+
+| | | | |
+|---|---|---|---|
+| Instagram | TikTok | GitHub | Facebook |
+| Threads | Pinterest | Twitter/X | Reddit |
+| Twitch | YouTube | Snapchat | Steam |
+| SoundCloud | Patreon | Medium | Dev.to |
+| Vimeo | Disqus | About.me | Flipboard |
+| SlideShare | Spotify | Pastebin | Flickr |
+| Etsy | Cash.app | Behance | Dribbble |
+| GoodReads | Instructables | Keybase | Kongregate |
+| LiveJournal | Last.fm | AngelList | ProductHunt |
+| Telegram | Roblox | Gumroad | Wikipedia |
+| HackerNews | | | |
+
+The full, authoritative list — including the exact URL pattern and detection rules used for each site — is in [`sites.json`](sites.json).
 
 ## Adding a new site
 
