@@ -4,7 +4,6 @@ import time
 from colorama import init, Fore, Style
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from urllib.parse import urlparse
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import json
@@ -80,18 +79,17 @@ def load_sites():
         print(f"{Fore.RED}Error: {SITES_FILE} is not a valid JSON file.{Style.RESET_ALL}")
         sys.exit(1)
 
-def verif(site_data, pseudo, session):
+def check_site(site_data, username, session):
     url_template = site_data["url"]
     site_name = site_data["name"]
-    check_type = site_data.get("check_type", "status_code")
     specific_error_codes = site_data.get("error_code")
     specific_error_texts = site_data.get("error_text", [])
-    
+
     # Handle URL formatting properly
     if "{}" in url_template:
-        full_url = url_template.format(pseudo)
+        full_url = url_template.format(username)
     else:
-        full_url = url_template + pseudo
+        full_url = url_template + username
 
     try:
         # Use random headers for each request to avoid detection
@@ -158,19 +156,19 @@ def print_banner():
     print(art)
     print(f"{Fore.MAGENTA}By Quelqu'un (Remastered)\n\n")
 
-def save_results(results, pseudo):
+def save_results(results, username):
     filename = "results.txt"
     try:
-        with open(filename, "a", encoding="utf-8") as fichier:
-            fichier.write(f"\nResults for '{pseudo}' ({time.strftime('%Y-%m-%d %H:%M')}):\n")
+        with open(filename, "a", encoding="utf-8") as f:
+            f.write(f"\nResults for '{username}' ({time.strftime('%Y-%m-%d %H:%M')}):\n")
             for site, status, url in results:
                 if status is True:
-                    fichier.write(f"  [+] {site}: FOUND -> {url}\n")
+                    f.write(f"  [+] {site}: FOUND -> {url}\n")
                 elif status is False:
-                    fichier.write(f"  [-] {site}: Available (Not Found)\n")
+                    f.write(f"  [-] {site}: Available (Not Found)\n")
                 else:
-                    fichier.write(f"  [~] {site}: Error/Uncertain\n")
-            fichier.write("-" * 30 + "\n")
+                    f.write(f"  [~] {site}: Error/Uncertain\n")
+            f.write("-" * 30 + "\n")
         print(f"\n{Fore.CYAN}Results saved to {filename}{Style.RESET_ALL}")
     except Exception as e:
         print(f"{Fore.RED}Error saving results: {e}{Style.RESET_ALL}")
@@ -188,22 +186,22 @@ def main():
         print_banner()
 
         if args.username:
-            pseudo_a_verifier = args.username
+            username_to_check = args.username
         else:
-            pseudo_a_verifier = input(f"{Fore.CYAN}Target Username : {Style.RESET_ALL}").strip()
+            username_to_check = input(f"{Fore.CYAN}Target Username : {Style.RESET_ALL}").strip()
 
-        if not pseudo_a_verifier:
+        if not username_to_check:
             print(f"{Fore.RED}Please enter a username.{Style.RESET_ALL}")
             time.sleep(1)
             continue
 
-        if any(c in FORBIDDEN_CHARS for c in pseudo_a_verifier):
+        if any(c in FORBIDDEN_CHARS for c in username_to_check):
             print(f"{Fore.RED}Error: The username contains unwanted characters ({FORBIDDEN_CHARS}){Style.RESET_ALL}")
             time.sleep(2)
             if args.username: break
             continue
 
-        print(f"\n{Fore.YELLOW}Checking availability for '{pseudo_a_verifier}' on {len(sites)} sites...{Style.RESET_ALL}\n")
+        print(f"\n{Fore.YELLOW}Checking availability for '{username_to_check}' on {len(sites)} sites...{Style.RESET_ALL}\n")
 
         results_list = []
         found_sites = []
@@ -211,7 +209,7 @@ def main():
         error_sites = []
 
         with ThreadPoolExecutor(max_workers=15) as executor:
-            futures = {executor.submit(verif, site, pseudo_a_verifier, session): site for site in sites}
+            futures = {executor.submit(check_site, site, username_to_check, session): site for site in sites}
             for future in as_completed(futures):
                 site_name, status, url = future.result()
                 results_list.append((site_name, status, url))
@@ -225,7 +223,7 @@ def main():
 
         # Summary
         print(f"\n{Fore.WHITE}{'='*40}{Style.RESET_ALL}")
-        print(f"SUMMARY FOR '{pseudo_a_verifier}'")
+        print(f"SUMMARY FOR '{username_to_check}'")
         print(f"{Fore.WHITE}{'='*40}{Style.RESET_ALL}")
         
         if found_sites:
@@ -240,7 +238,7 @@ def main():
              print(f"\n{Fore.YELLOW}[~] ERRORS: {len(error_sites)}{Style.RESET_ALL}")
              print(f"{Fore.YELLOW}{', '.join(error_sites)}{Style.RESET_ALL}")
 
-        save_results(results_list, pseudo_a_verifier)
+        save_results(results_list, username_to_check)
 
         if args.username:
             break

@@ -1,2 +1,8 @@
-__pycache__
+__pycache__/
+*.pyc
 results.txt
+CLAUDE.md
+.venv/
+venv/
+.idea/
+.vscode/
