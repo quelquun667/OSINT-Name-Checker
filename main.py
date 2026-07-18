@@ -210,22 +210,30 @@ def main():
     parser = argparse.ArgumentParser(description="OSINT Name Checker - Find profiles by username.")
     parser.add_argument("-u", "--username", help="Username to check directly")
     parser.add_argument("-o", "--output", help="File to save results to (default: results.txt)")
+    parser.add_argument("--nsfw", action="store_true", help="Also check 18+/adult sites (disabled by default)")
     args = parser.parse_args()
 
-    sites = load_sites()
+    all_sites = load_sites()
     session = create_session()
 
-    output_file = args.output
-    if not output_file:
-        if args.username:
-            output_file = "results.txt"
-        else:
-            clear_screen()
-            print_banner()
+    if args.username:
+        output_file = args.output or "results.txt"
+        include_nsfw = args.nsfw
+    else:
+        clear_screen()
+        print_banner()
+        output_file = args.output
+        if not output_file:
             answer = input(
                 f"{Fore.CYAN}Save results to file (Enter for default 'results.txt'): {Style.RESET_ALL}"
             ).strip()
             output_file = answer if answer else "results.txt"
+        include_nsfw = args.nsfw
+        if not include_nsfw:
+            answer = input(f"{Fore.CYAN}Include 18+/adult sites? (y/N): {Style.RESET_ALL}").strip().lower()
+            include_nsfw = answer == "y"
+
+    sites = all_sites if include_nsfw else [s for s in all_sites if not s.get("nsfw")]
 
     while True:
         clear_screen()

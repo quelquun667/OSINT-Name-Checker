@@ -309,5 +309,36 @@
     "error_text": [
       "no such user"
     ]
+  },
+  {
+    "name": "Bitbucket",
+    "url": "https://bitbucket.org/{}/",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Letterboxd",
+    "url": "https://letterboxd.com/{}/",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Chess.com",
+    "url": "https://www.chess.com/member/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Lichess",
+    "url": "https://lichess.org/@/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Xvideos",
+    "url": "https://www.xvideos.com/profiles/{}",
+    "check_type": "status_code",
+    "error_code": 404,
+    "nsfw": true
   }
 ]
