@@ -4,12 +4,12 @@
     "url": "https://www.instagram.com/{}",
     "check_type": "message",
     "error_text": [
-      "page not found",
-      "the link you followed may be broken",
-      "sorry, this page isn't available"
+      "profile isn't available"
     ],
+    "match_title_only": true,
     "unreliable": true,
-    "unreliable_reason": "Serves an identical generic login-wall page (same length/content) for both real and fake usernames when unauthenticated — no text or status signal currently distinguishes them."
+    "requires_browser": true,
+    "unreliable_reason": "Serves an identical generic login-wall page (same length/content) for both real and fake usernames when unauthenticated via plain HTTP requests. Automatically uses a headless browser instead (when available — see --no-browser), which renders the real page and can tell them apart via the <title> tag; without the browser it's reported as uncertain."
   },
   {
     "name": "TikTok",
@@ -27,24 +27,25 @@
     "name": "Facebook",
     "url": "https://www.facebook.com/{}",
     "check_type": "message",
-    "error_text": [
-      "this content is not available",
-      "page not found",
-      "broken link"
+    "found_text": [
+      " | facebook"
     ],
+    "match_title_only": true,
     "unreliable": true,
-    "unreliable_reason": "Blocks unauthenticated requests with an identical generic 400 response regardless of whether the username exists (verified with a real, well-known profile)."
+    "requires_browser": true,
+    "unreliable_reason": "Blocks unauthenticated plain HTTP requests with an identical generic 400 response regardless of whether the username exists. Automatically uses a headless browser instead (when available — see --no-browser): a real profile's <title> is \"Name | Facebook\", a missing one is just \"Facebook\"."
   },
   {
     "name": "Threads",
     "url": "https://www.threads.net/@{}",
     "check_type": "message",
-    "error_text": [
-      "content not available",
-      "sorry, this page isn't available"
+    "found_text": [
+      "(@{})"
     ],
+    "match_title_only": true,
     "unreliable": true,
-    "unreliable_reason": "Pure client-side rendered app shell — real and fake usernames return an identical generic page (same status, same generic <title>) with no server-rendered signal to detect."
+    "requires_browser": true,
+    "unreliable_reason": "Pure client-side rendered app shell via plain HTTP requests — real and fake usernames return an identical generic page. Automatically uses a headless browser instead (when available — see --no-browser), which renders the real <title> (containing \"(@username)\" for a real profile, a login prompt otherwise)."
   },
   {
     "name": "Pinterest",
@@ -69,12 +70,12 @@
     "url": "https://www.reddit.com/user/{}",
     "check_type": "message",
     "error_text": [
-      "sorry, nobody on reddit goes by that name",
-      "page not found",
-      "sorry, we couldn't find that account"
+      "heart of the internet"
     ],
+    "match_title_only": true,
     "unreliable": true,
-    "unreliable_reason": "Both the HTML page and the official /about.json API are behind a bot-verification wall ('Please wait for verification') that returns the same response for real and fake usernames."
+    "requires_browser": true,
+    "unreliable_reason": "Both the HTML page and the official /about.json API are behind a bot-verification wall ('Please wait for verification') that returns the same response for real and fake usernames via plain HTTP requests. Automatically uses a headless browser instead (when available — see --no-browser), which passes the verification and renders the real <title>."
   },
   {
     "name": "Twitch",
