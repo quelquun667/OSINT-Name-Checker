@@ -156,9 +156,23 @@ def print_banner():
     print(art)
     print(f"{Fore.MAGENTA}By Quelqu'un (Remastered)\n\n")
 
+MAX_LOG_LINES = 5000  # cap on results.txt so it doesn't grow forever
+LOG_TRIM_TARGET = 2000  # lines kept after trimming
+
+def _trim_log_if_needed(filename):
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        return
+    if len(lines) > MAX_LOG_LINES:
+        with open(filename, "w", encoding="utf-8") as f:
+            f.writelines(lines[-LOG_TRIM_TARGET:])
+
 def save_results(results, username):
     filename = "results.txt"
     try:
+        _trim_log_if_needed(filename)
         with open(filename, "a", encoding="utf-8") as f:
             f.write(f"\nResults for '{username}' ({time.strftime('%Y-%m-%d %H:%M')}):\n")
             for site, status, url in results:

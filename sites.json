@@ -113,8 +113,7 @@
     "url": "https://steamcommunity.com/id/{}",
     "check_type": "message",
     "error_text": [
-      "the specified profile could not be found",
-      "error"
+      "the specified profile could not be found"
     ]
   },
   {
@@ -138,7 +137,6 @@
     "url": "https://medium.com/@{}",
     "check_type": "message",
     "error_text": [
-      "404",
       "page not found",
       "out of nothing, something"
     ]
@@ -203,7 +201,6 @@
     "check_type": "message",
     "error_text": [
       "couldn't find your shop",
-      "404",
       "page not found"
     ]
   },
@@ -266,7 +263,6 @@
     "url": "https://angel.co/{}",
     "check_type": "message",
     "error_text": [
-      "404",
       "page not found"
     ]
   },
@@ -275,8 +271,7 @@
     "url": "https://www.producthunt.com/@{}",
     "check_type": "message",
     "error_text": [
-      "page not found",
-      "404"
+      "page not found"
     ]
   },
   {
