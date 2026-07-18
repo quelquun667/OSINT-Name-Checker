@@ -9,7 +9,9 @@
       "the link you followed may be broken",
       "sorry, this page isn't available",
       "sorry, this page isn't available."
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "Serves an identical generic login-wall page (same length/content) for both real and fake usernames when unauthenticated — no text or status signal currently distinguishes them."
   },
   {
     "name": "TikTok",
@@ -20,7 +22,9 @@
       "couldn't find this account",
       "user not found",
       "page not found"
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "Ships a generic i18n string bundle (including phrases like \"couldn't find this account\") on every page load, real or fake, and serves an identical generic <title> for both — no reliable signal via plain HTTP requests."
   },
   {
     "name": "GitHub",
@@ -37,7 +41,9 @@
       "ce contenu n'est pas disponible",
       "page not found",
       "broken link"
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "Blocks unauthenticated requests with an identical generic 400 response regardless of whether the username exists (verified with a real, well-known profile)."
   },
   {
     "name": "Threads",
@@ -48,7 +54,9 @@
       "page introuvable",
       "sorry, this page isn't available",
       "cette page n"
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "Pure client-side rendered app shell — real and fake usernames return an identical generic page (same status, same generic <title>) with no server-rendered signal to detect."
   },
   {
     "name": "Pinterest",
@@ -63,11 +71,10 @@
     "name": "Twitter/X",
     "url": "https://twitter.com/{}",
     "check_type": "message",
-    "error_text": [
-      "this account doesn",
-      "ce compte n",
-      "page not found"
-    ]
+    "found_text": [
+      "(@{})"
+    ],
+    "match_title_only": true
   },
   {
     "name": "Reddit",
@@ -77,7 +84,9 @@
       "sorry, nobody on reddit goes by that name",
       "page not found",
       "sorry, we couldn't find that account"
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "Both the HTML page and the official /about.json API are behind a bot-verification wall ('Please wait for verification') that returns the same response for real and fake usernames."
   },
   {
     "name": "Twitch",
@@ -87,17 +96,19 @@
       "sorry, unless you",
       "content not available",
       "machine that doesn't exist"
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "Pure client-side rendered app shell — real and fake usernames return byte-for-byte identical pages with no server-rendered signal to detect."
   },
   {
     "name": "YouTube",
     "url": "https://www.youtube.com/@{}",
-    "check_type": "message",
-    "error_text": [
-      "404 not found",
-      "this page isn't available",
-      "cette page n'est pas disponible"
-    ]
+    "check_type": "status_code",
+    "error_code": 404,
+    "cookies": {
+      "CONSENT": "YES+1",
+      "SOCS": "CAI"
+    }
   },
   {
     "name": "Snapchat",
@@ -174,8 +185,11 @@
   {
     "name": "SlideShare",
     "url": "https://www.slideshare.net/{}",
-    "check_type": "status_code",
-    "error_code": 404
+    "check_type": "message",
+    "error_text": [
+      "page no longer exists"
+    ],
+    "match_title_only": true
   },
   {
     "name": "Spotify",
@@ -202,7 +216,9 @@
     "error_text": [
       "couldn't find your shop",
       "page not found"
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "Blocks unauthenticated requests with an identical generic 403 response regardless of whether the shop exists."
   },
   {
     "name": "Cash.app",
@@ -264,7 +280,9 @@
     "check_type": "message",
     "error_text": [
       "page not found"
-    ]
+    ],
+    "unreliable": true,
+    "unreliable_reason": "AngelList has rebranded to Wellfound (angel.co redirects to wellfound.com) and now blocks unauthenticated requests with an identical generic 403 regardless of username validity."
   },
   {
     "name": "ProductHunt",
@@ -277,12 +295,7 @@
   {
     "name": "Telegram",
     "url": "https://t.me/{}",
-    "check_type": "message",
-    "error_text": [
-      "tgme_page_title",
-      "view in telegram",
-      "preview channel"
-    ]
+    "check_type": "message"
   },
   {
     "name": "Roblox",
@@ -309,12 +322,6 @@
     "error_text": [
       "no such user"
     ]
-  },
-  {
-    "name": "Bitbucket",
-    "url": "https://bitbucket.org/{}/",
-    "check_type": "status_code",
-    "error_code": 404
   },
   {
     "name": "Letterboxd",

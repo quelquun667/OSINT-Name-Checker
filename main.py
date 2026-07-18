@@ -1,9 +1,11 @@
+import re
 import requests
 import sys
 import time
 from colorama import init, Fore, Style
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urlparse
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import json
@@ -79,11 +81,25 @@ def load_sites():
         print(f"{Fore.RED}Error: {SITES_FILE} is not a valid JSON file.{Style.RESET_ALL}")
         sys.exit(1)
 
+def _base_domain(url):
+    # Naive eTLD+1 approximation (last two dot-separated labels). Good enough
+    # to tell "still on this site, just a different subdomain" (e.g.
+    # en.wikipedia.org, username.gumroad.com) apart from "bounced to an
+    # unrelated site" (e.g. t.me -> telegram.org) without a full public
+    # suffix list.
+    host = urlparse(url).netloc.lower()
+    parts = host.split(".")
+    return ".".join(parts[-2:]) if len(parts) >= 2 else host
+
 def check_site(site_data, username, session):
     url_template = site_data["url"]
     site_name = site_data["name"]
     specific_error_codes = site_data.get("error_code")
     specific_error_texts = site_data.get("error_text", [])
+    found_texts = [t.format(username) for t in site_data.get("found_text", [])]
+    extra_cookies = site_data.get("cookies", {})
+    unreliable = site_data.get("unreliable", False)
+    match_title_only = site_data.get("match_title_only", False)
 
     # Handle URL formatting properly
     if "{}" in url_template:
@@ -93,38 +109,69 @@ def check_site(site_data, username, session):
 
     try:
         # Use random headers for each request to avoid detection
-        response = session.get(full_url, headers=get_random_headers(), timeout=10)
-        
-        # Determine presence based on configuration
-        found = True 
-        
-        # 1. Check Status Code (Always check for 404 unless strictly specified otherwise, but 404 usually means not found)
-        if response.status_code == 404:
-            found = False
-        elif specific_error_codes and response.status_code == specific_error_codes:
-            found = False
+        response = session.get(full_url, headers=get_random_headers(), timeout=10, cookies=extra_cookies)
 
-        # 2. Check Text Content
-        text_content = (response.text or "").lower()
-        
-        # Check specific error texts from JSON
-        if found and specific_error_texts:
-            if any(phrase.lower() in text_content for phrase in specific_error_texts):
-                found = False
-        
-        # Fallback to generic phrases if status is 200 but it might be a soft 404
-        if found and response.status_code == 200:
-             if any(phrase in text_content for phrase in GENERIC_NOT_FOUND_PHRASES):
-                 found = False
-
-        # 3. Check for redirects to login pages (Heuristic)
-        if "login" in response.url.lower() or "signin" in response.url.lower():
-             # If the original URL didn't have login, but we are here now... likely a redirect because profile missing
-             if "login" not in full_url.lower() and "signin" not in full_url.lower():
-                 found = False
-
-        # Handle ambiguous cases
+        # Handle ambiguous cases first
         if response.status_code >= 500 or response.status_code == 429:
+            return (site_name, None, full_url)
+
+        text_content = (response.text or "").lower()
+
+        # Some JS-heavy sites ship every possible UI string (including
+        # "not found"-sounding boilerplate) in every page load, real or fake.
+        # For those, only the <title> tag reliably reflects the actual page
+        # state, so error_text/found_text matching can be restricted to it.
+        if match_title_only:
+            title_match = re.search(r"<title[^>]*>(.*?)</title>", response.text or "", re.I | re.S)
+            search_text = title_match.group(1).lower() if title_match else ""
+        else:
+            search_text = text_content
+
+        # Sites with a positive "found_text" marker (e.g. a username-specific
+        # <title> that only renders server-side for real profiles) are judged
+        # purely on that signal — status code and generic text checks are too
+        # unreliable on JS-heavy sites to be worth combining here.
+        if found_texts:
+            found = any(phrase.lower() in search_text for phrase in found_texts)
+        else:
+            found = True
+
+            # 1. Status code: 404 always means "not found"; a site-specific
+            # error_code counts too.
+            if response.status_code == 404:
+                found = False
+            elif specific_error_codes and response.status_code == specific_error_codes:
+                found = False
+
+            # 2. Site-specific "not found" text (soft-404 pages that return 200)
+            if found and specific_error_texts:
+                if any(phrase.lower() in search_text for phrase in specific_error_texts):
+                    found = False
+
+            # 3. Generic fallback phrases — only when the site gave us no
+            # specific rule to go on. Modern JS-heavy sites often ship a big
+            # i18n string table on every page (found or not), so running this
+            # fallback against an already-configured site produces false
+            # negatives instead of catching real soft-404s.
+            elif found and response.status_code == 200 and not specific_error_codes:
+                if any(phrase in text_content for phrase in GENERIC_NOT_FOUND_PHRASES):
+                    found = False
+
+            # 4. Redirect heuristic: if we got bounced to a different
+            # hostname entirely (e.g. a login wall or the site's own
+            # marketing homepage), the profile likely doesn't exist. Only the
+            # hostname is compared, ignoring a leading "www." (harmless
+            # canonicalization) and the path (some sites legitimately
+            # redirect a valid profile to a different URL on the *same*
+            # site, e.g. a numeric profile ID instead of the username, or a
+            # different subdomain such as a locale or per-user prefix).
+            if found and _base_domain(response.url) != _base_domain(full_url):
+                found = False
+
+        if unreliable:
+            # Known to be undetectable via plain HTTP requests right now
+            # (anti-bot wall / identical page for real and fake profiles).
+            # Report "uncertain" rather than guessing.
             return (site_name, None, full_url)
 
         return (site_name, found, full_url)
@@ -293,7 +340,7 @@ def main():
             # print(f"{Fore.RED}{', '.join(available_sites)}{Style.RESET_ALL}") # Optional: Don't clutter screen if too many
 
         if error_sites:
-             print(f"\n{Fore.YELLOW}[~] ERRORS: {len(error_sites)}{Style.RESET_ALL}")
+             print(f"\n{Fore.YELLOW}[~] UNCERTAIN (network error or unreliable site): {len(error_sites)}{Style.RESET_ALL}")
              print(f"{Fore.YELLOW}{', '.join(error_sites)}{Style.RESET_ALL}")
 
         save_results(results_list, username_to_check, output_file)

@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 results.txt
+sites_verification_report.json
 CLAUDE.md
 .venv/
 venv/
