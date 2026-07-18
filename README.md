@@ -56,21 +56,75 @@ Results are printed to the console (color-coded, with a live progress indicator)
 
 ## Supported sites (41)
 
-| | | | |
-|---|---|---|---|
-| Instagram | TikTok | GitHub | Facebook |
-| Threads | Pinterest | Twitter/X | Reddit |
-| Twitch | YouTube | Snapchat | Steam |
-| SoundCloud | Patreon | Medium | Dev.to |
-| Vimeo | Disqus | About.me | Flipboard |
-| SlideShare | Spotify | Pastebin | Flickr |
-| Etsy | Cash.app | Behance | Dribbble |
-| GoodReads | Instructables | Keybase | Kongregate |
-| LiveJournal | Last.fm | AngelList | ProductHunt |
-| Telegram | Roblox | Gumroad | Wikipedia |
-| HackerNews | | | |
+<details open>
+<summary><strong>Social media</strong> (11)</summary>
+
+Instagram · TikTok · Facebook · Threads · Pinterest · Twitter/X · Reddit · Twitch · YouTube · Snapchat · Telegram
+
+</details>
+
+<details open>
+<summary><strong>Developer & tech</strong> (5)</summary>
+
+GitHub · Dev.to · Keybase · HackerNews · Disqus
+
+</details>
+
+<details open>
+<summary><strong>Gaming</strong> (3)</summary>
+
+Steam · Roblox · Kongregate
+
+</details>
+
+<details open>
+<summary><strong>Music & audio</strong> (3)</summary>
+
+SoundCloud · Spotify · Last.fm
+
+</details>
+
+<details open>
+<summary><strong>Creative & portfolio</strong> (6)</summary>
+
+Behance · Dribbble · Flickr · SlideShare · Vimeo · Instructables
+
+</details>
+
+<details open>
+<summary><strong>Blogging & writing</strong> (5)</summary>
+
+Medium · LiveJournal · AngelList · ProductHunt · GoodReads
+
+</details>
+
+<details open>
+<summary><strong>Commerce & crowdfunding</strong> (4)</summary>
+
+Etsy · Cash.app · Patreon · Gumroad
+
+</details>
+
+<details open>
+<summary><strong>Other</strong> (4)</summary>
+
+About.me · Flipboard · Pastebin · Wikipedia
+
+</details>
 
 The full, authoritative list — including the exact URL pattern and detection rules used for each site — is in [`sites.json`](sites.json).
+
+## How detection works
+
+For every site, `check_site()` runs the same layered checks, in order, to decide whether the profile exists:
+
+1. **HTTP status code** — a `404` always means "not found". If the site's entry defines a custom `error_code` (some sites use a different status for missing profiles), that counts too.
+2. **Site-specific text match** (`error_text`) — for sites that return `200 OK` even on a missing profile ("soft 404"), the page body is scanned (case-insensitive) for phrases known to appear only on that site's not-found page.
+3. **Generic fallback phrases** — if a site has no `error_text` configured (or none matched) but still returned `200 OK`, the page is checked against a built-in list of common "not found" phrases seen across many sites (e.g. "page not found", "doesn't exist", "no results found").
+4. **Login-redirect heuristic** — if the request gets redirected to a login/sign-in page that wasn't the original target URL, the profile is treated as not found (common pattern for sites that wall off missing profiles behind a login screen).
+5. **Ambiguous responses** — a `5xx` or `429` status is never reported as found/not found; it's flagged as **uncertain** (shown in yellow) so you don't mistake a rate-limit or server error for a real result.
+
+This means a new site can work out of the box with just a `url` and `error_code` (or nothing but the default `404` check) — `error_text` only needs to be added for sites with soft-404 pages, and step 3 already provides a reasonable fallback for those you haven't configured yet.
 
 ## Adding a new site
 
@@ -80,7 +134,6 @@ Sites are defined in [`sites.json`](sites.json) — no code changes required. Ea
 {
   "name": "GitHub",
   "url": "https://www.github.com/{}",
-  "check_type": "status_code",
   "error_code": 404
 }
 ```
@@ -88,8 +141,9 @@ Sites are defined in [`sites.json`](sites.json) — no code changes required. Ea
 - `url`: use `{}` as a placeholder for the username.
 - `error_code` *(optional)*: an HTTP status code (other than 404) that also means "not found".
 - `error_text` *(optional)*: a list of substrings found in a site's "not found" page, for sites that return `200 OK` even when the profile doesn't exist.
+- `check_type` *(optional, informational only)*: some entries in `sites.json` carry a `"status_code"` / `"message"` label for readability. It has no effect on the actual check — every site goes through the same layered detection described above regardless of this field.
 
-Prefer supplying real `error_text` strings copied from the site's actual not-found page — the built-in generic fallback list is a last resort and can produce false positives/negatives.
+Prefer supplying real `error_text` strings copied from the site's actual not-found page — the built-in generic fallback list (step 3 above) is a last resort and can produce false positives/negatives.
 
 ## Disclaimer on accuracy
 
