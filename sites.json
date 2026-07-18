@@ -5,26 +5,17 @@
     "check_type": "message",
     "error_text": [
       "page not found",
-      "cette page n",
       "the link you followed may be broken",
-      "sorry, this page isn't available",
-      "sorry, this page isn't available."
+      "sorry, this page isn't available"
     ],
     "unreliable": true,
     "unreliable_reason": "Serves an identical generic login-wall page (same length/content) for both real and fake usernames when unauthenticated — no text or status signal currently distinguishes them."
   },
   {
     "name": "TikTok",
-    "url": "https://www.tiktok.com/@{}",
+    "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@{}",
     "check_type": "status_code",
-    "error_code": 404,
-    "error_text": [
-      "couldn't find this account",
-      "user not found",
-      "page not found"
-    ],
-    "unreliable": true,
-    "unreliable_reason": "Ships a generic i18n string bundle (including phrases like \"couldn't find this account\") on every page load, real or fake, and serves an identical generic <title> for both — no reliable signal via plain HTTP requests."
+    "error_code": 400
   },
   {
     "name": "GitHub",
@@ -38,7 +29,6 @@
     "check_type": "message",
     "error_text": [
       "this content is not available",
-      "ce contenu n'est pas disponible",
       "page not found",
       "broken link"
     ],
@@ -51,9 +41,7 @@
     "check_type": "message",
     "error_text": [
       "content not available",
-      "page introuvable",
-      "sorry, this page isn't available",
-      "cette page n"
+      "sorry, this page isn't available"
     ],
     "unreliable": true,
     "unreliable_reason": "Pure client-side rendered app shell — real and fake usernames return an identical generic page (same status, same generic <title>) with no server-rendered signal to detect."
@@ -338,6 +326,45 @@
   {
     "name": "Lichess",
     "url": "https://lichess.org/@/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "osu!",
+    "url": "https://osu.ppy.sh/users/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Backloggd",
+    "url": "https://www.backloggd.com/u/{}/",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "DeviantArt",
+    "url": "https://www.deviantart.com/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "MyAnimeList",
+    "url": "https://myanimelist.net/profile/{}",
+    "check_type": "status_code",
+    "error_code": 404
+  },
+  {
+    "name": "Bandcamp",
+    "url": "https://{}.bandcamp.com",
+    "check_type": "message",
+    "error_text": [
+      "signup | bandcamp"
+    ],
+    "match_title_only": true
+  },
+  {
+    "name": "Untappd",
+    "url": "https://untappd.com/user/{}",
     "check_type": "status_code",
     "error_code": 404
   },

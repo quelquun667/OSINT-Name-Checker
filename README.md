@@ -55,25 +55,25 @@ python main.py -u <username> -o my_report.txt --nsfw
 
 Results are printed to the console (color-coded, with a live progress indicator) and appended to the chosen output file. The log file is automatically trimmed once it grows past 5000 lines, so it won't grow forever.
 
-## Supported sites (45 — 44 by default + 1 optional 18+)
+## Supported sites (51 — 50 by default + 1 optional 18+)
 
 ```
 Supported sites
 ├── Social Media (11)
-│   Instagram*, TikTok*, Facebook*, Threads*, Pinterest,
+│   Instagram*, TikTok, Facebook*, Threads*, Pinterest,
 │   Twitter/X, Reddit*, Twitch*, YouTube, Snapchat, Telegram
 │
 ├── Developer & Tech (5)
 │   GitHub, Dev.to, Keybase, HackerNews, Disqus
 │
-├── Gaming (5)
-│   Steam, Roblox, Kongregate, Chess.com, Lichess
+├── Gaming (7)
+│   Steam, Roblox, Kongregate, Chess.com, Lichess, osu!, Backloggd
 │
-├── Music & Audio (3)
-│   SoundCloud, Spotify, Last.fm
+├── Music & Audio (4)
+│   SoundCloud, Spotify, Last.fm, Bandcamp
 │
-├── Creative & Portfolio (6)
-│   Behance, Dribbble, Flickr, SlideShare, Vimeo, Instructables
+├── Creative & Portfolio (7)
+│   Behance, Dribbble, Flickr, SlideShare, Vimeo, Instructables, DeviantArt
 │
 ├── Blogging & Writing (5)
 │   Medium, LiveJournal, AngelList*, ProductHunt, GoodReads
@@ -81,8 +81,8 @@ Supported sites
 ├── Commerce & Crowdfunding (4)
 │   Etsy*, Cash.app, Patreon, Gumroad
 │
-├── Other (5)
-│   About.me, Flipboard, Pastebin, Wikipedia, Letterboxd
+├── Other (7)
+│   About.me, Flipboard, Pastebin, Wikipedia, Letterboxd, MyAnimeList, Untappd
 │
 └── 18+ / Adult (1) — opt-in only, off by default, see --nsfw
     Xvideos
@@ -97,7 +97,9 @@ The full, authoritative list — including the exact URL pattern and detection r
 
 Each check looks at the HTTP status code (a `404`, or a site-specific `error_code`, means "not found"), then falls back to scanning the page for "not found" phrases — either site-specific (`error_text`) or a generic built-in list — for sites that return `200 OK` even on a missing profile. Unexpected redirects off the site entirely are also treated as "not found". A `5xx`/`429` response is never guessed either way; it's reported as **uncertain**. See [Adding a new site](#adding-a-new-site) below for the exact fields.
 
-Some major platforms (Instagram, TikTok, Facebook, Threads, Reddit, Twitch, Etsy, AngelList/Wellfound) now serve an identical, generic page to unauthenticated requests regardless of whether the username exists — there is currently no reliable way to tell found from not-found on these without a logged-in session or a headless browser, both out of scope for this lightweight tool. Rather than guess, they're flagged `"unreliable": true` in `sites.json` and always reported as **uncertain**. Run `python verify_sites.py` (see below) to check whether that's changed.
+Some major platforms (Instagram, Facebook, Threads, Reddit, Twitch, Etsy, AngelList/Wellfound) now serve an identical, generic page to unauthenticated requests regardless of whether the username exists — there is currently no reliable way to tell found from not-found on these without a logged-in session or a headless browser, both out of scope for this lightweight tool. Rather than guess, they're flagged `"unreliable": true` in `sites.json` and always reported as **uncertain**. Run `python verify_sites.py` (see below) to check whether that's changed.
+
+A few entries use a site's own public API endpoint instead of scraping HTML, the same technique tools like Sherlock/Maigret use — no API key or account needed, just a different URL: TikTok's oEmbed endpoint, and a cookie to bypass YouTube's consent wall (see the `cookies` field below).
 
 ## Adding a new site
 

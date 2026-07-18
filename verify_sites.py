@@ -25,6 +25,7 @@ from main import load_sites, create_session, check_site
 # Sites flagged "unreliable" in sites.json are skipped entirely (see below) —
 # they're intentionally always reported as uncertain by check_site().
 TEST_USERNAMES = {
+    "TikTok": "tiktok",
     "GitHub": "torvalds",
     "Pinterest": "torvalds",
     "Twitter/X": "torvalds",
@@ -56,6 +57,13 @@ TEST_USERNAMES = {
     "Letterboxd": "davidehrlich",
     "Chess.com": "hikaru",
     "Lichess": "DrNykterstein",
+    "osu!": "peppy",
+    "Backloggd": "backloggd",
+    "DeviantArt": "deviantart",
+    "MyAnimeList": "Josh",
+    "Bandcamp": "coldworld",
+    "Untappd": "untappd",
+    "Kongregate": "kongregate",
     "Xvideos": "pornhub",
 }
 
