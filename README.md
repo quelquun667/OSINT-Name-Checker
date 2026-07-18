@@ -20,7 +20,7 @@ This tool is provided for **educational and legitimate OSINT (Open Source Intell
 - Status-code **and** page-content heuristics to reduce false positives on "soft 404" pages.
 - Retry logic with backoff for transient network/server errors (429, 5xx).
 - User-Agent rotation to reduce trivial bot blocking.
-- Colored terminal output and a persistent `results.txt` log.
+- A live, multi-column progress table (via [rich](https://github.com/Textualize/rich)) showing every site's status at once as results come in, plus a persistent `results.txt` log.
 - Interactive mode (loop over multiple usernames) or one-shot CLI mode.
 
 ## Installation

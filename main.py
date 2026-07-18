@@ -2,8 +2,6 @@ import re
 import requests
 import sys
 import time
-from colorama import init, Fore, Style
-import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 from requests.adapters import HTTPAdapter
@@ -12,8 +10,18 @@ import json
 import random
 import argparse
 
+from rich.console import Console
+from rich.table import Table
+from rich.live import Live
+from rich.panel import Panel
+from rich.text import Text
+from rich.prompt import Prompt, Confirm
+from rich import box
+
 # --- CONFIGURATION ---
 SITES_FILE = "sites.json"
+
+console = Console()
 
 # List of User-Agents for rotation
 USER_AGENTS = [
@@ -45,9 +53,6 @@ GENERIC_NOT_FOUND_PHRASES = [
     "this content is not available",
 ]
 
-# Initialize colorama
-init(autoreset=True)
-
 def get_random_headers():
     return {
         "User-Agent": random.choice(USER_AGENTS),
@@ -75,10 +80,10 @@ def load_sites():
         with open(SITES_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
-        print(f"{Fore.RED}Error: {SITES_FILE} not found.{Style.RESET_ALL}")
+        console.print(f"[red]Error: {SITES_FILE} not found.[/red]")
         sys.exit(1)
     except json.JSONDecodeError:
-        print(f"{Fore.RED}Error: {SITES_FILE} is not a valid JSON file.{Style.RESET_ALL}")
+        console.print(f"[red]Error: {SITES_FILE} is not a valid JSON file.[/red]")
         sys.exit(1)
 
 def _base_domain(url):
@@ -179,49 +184,26 @@ def check_site(site_data, username, session):
     except requests.RequestException:
         return (site_name, None, full_url)
 
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
 def print_banner():
-    art = f"""{Fore.MAGENTA}███▄    █  ▄▄▄       ███▄ ▄███▓▓█████     ▄████▄   ██░ ██ ▓█████  ▄████▄   ██ ▄█▀▓█████  ██▀███
+    art = """███▄    █  ▄▄▄       ███▄ ▄███▓▓█████     ▄████▄   ██░ ██ ▓█████  ▄████▄   ██ ▄█▀▓█████  ██▀███
   ██ ▀█   █ ▒████▄    ▓██▒▀█▀ ██▒▓█   ▀    ▒██▀ ▀█  ▓██░ ██▒▓█   ▀ ▒██▀ ▀█   ██▄█▒ ▓█   ▀ ▓██ ▒ ██▒
  ▓██  ▀█ ██▒▒██  ▀█▄  ▓██    ▓██░▒███      ▒▓█    ▄ ▒██▀▀██░▒███   ▒▓█    ▄ ▓███▄░ ▒███   ▓██ ░▄█ ▒
- ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██    ▒██ ▒▓█  ▄    ▒▓▓▄ ▄██▒░▓█ ░██ ▒▓█  ▄ ▒▓▓▄ ▄██▒▓██ █▄ ▒▓█  ▄ ▒██▀▀█▄  
+ ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██    ▒██ ▒▓█  ▄    ▒▓▓▄ ▄██▒░▓█ ░██ ▒▓█  ▄ ▒▓▓▄ ▄██▒▓██ █▄ ▒▓█  ▄ ▒██▀▀█▄
  ▒██░   ▓██░ ▓█   ▓██▒▒██▒   ░██▒░▒████▒   ▒ ▓███▀ ░░▓█▒░██▓░▒████▒▒ ▓███▀ ░▒██▒ █▄░▒████▒░██▓ ▒██▒
  ░ ▒░   ▒ ▒  ▒▒   ▓▒█░░ ▒░   ░  ░░░ ▒░ ░   ░ ░▒ ▒  ░ ▒ ░░▒░▒░░ ▒░ ░░ ░▒ ▒  ░▒ ▒▒ ▓▒░░ ▒░ ░░ ▒▓ ░▒▓░
  ░ ░░   ░ ▒░  ▒   ▒▒ ░░  ░      ░ ░ ░  ░     ░  ▒    ▒ ░▒░ ░ ░ ░  ░  ░  ▒   ░ ░▒ ▒░ ░ ░  ░  ░▒ ░ ▒░
-    ░   ░ ░   ░   ▒   ░      ░      ░      ░         ░  ░░ ░   ░   ░        ░ ░░ ░    ░     ░░   ░ 
-          ░       ░  ░       ░      ░  ░   ░ ░       ░  ░  ░   ░  ░░ ░      ░  ░      ░  ░   ░     
+    ░   ░ ░   ░   ▒   ░      ░      ░      ░         ░  ░░ ░   ░   ░        ░ ░░ ░    ░     ░░   ░
+          ░       ░  ░       ░      ░  ░   ░ ░       ░  ░  ░   ░  ░░ ░      ░  ░      ░  ░   ░
                                            ░                       ░                               """
-    print(art)
-    print(f"{Fore.MAGENTA}By Quelqu'un (Remastered)\n\n")
+    console.print(art, style="magenta", highlight=False, soft_wrap=True)
+    console.print("By Quelqu'un\n", style="magenta")
 
-def spinner(message, duration=1.0):
-    frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-    end_time = time.time() + duration
-    i = 0
-    while time.time() < end_time:
-        sys.stdout.write(f"\r{Fore.CYAN}{frames[i % len(frames)]} {message}{Style.RESET_ALL}  ")
-        sys.stdout.flush()
-        time.sleep(0.08)
-        i += 1
-    sys.stdout.write("\r" + " " * (len(message) + 4) + "\r")
-    sys.stdout.flush()
-
-def print_status_line(site_name, status, done, total):
-    if status is True:
-        symbol, color = "✔", Fore.GREEN
-    elif status is False:
-        symbol, color = "✘", Fore.RED
-    else:
-        symbol, color = "!", Fore.YELLOW
-    print(f"{color}{Style.BRIGHT}{symbol}{Style.RESET_ALL} {site_name:<16} {Fore.CYAN}[{done:>2}/{total}]{Style.RESET_ALL}")
-
-def print_summary_box(title):
-    width = max(40, len(title) + 4)
-    print(f"\n{Fore.CYAN}{Style.BRIGHT}╔{'═' * width}╗{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{Style.BRIGHT}║{title.center(width)}║{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{Style.BRIGHT}╚{'═' * width}╝{Style.RESET_ALL}")
+STATUS_LABELS = {
+    True: "[bold green]FOUND[/bold green]",
+    False: "[red]not found[/red]",
+    None: "[yellow]uncertain[/yellow]",
+}
+PENDING_LABEL = "[dim]checking…[/dim]"
 
 MAX_LOG_LINES = 5000  # cap on results.txt so it doesn't grow forever
 LOG_TRIM_TARGET = 2000  # lines kept after trimming
@@ -249,9 +231,9 @@ def save_results(results, username, filename="results.txt"):
                 else:
                     f.write(f"  [~] {site}: Error/Uncertain\n")
             f.write("-" * 30 + "\n")
-        print(f"\n{Fore.CYAN}Results saved to {filename}{Style.RESET_ALL}")
+        console.print(f"\n[cyan]Results saved to {filename}[/cyan]")
     except Exception as e:
-        print(f"{Fore.RED}Error saving results: {e}{Style.RESET_ALL}")
+        console.print(f"[red]Error saving results: {e}[/red]")
 
 def main():
     parser = argparse.ArgumentParser(description="OSINT Name Checker - Find profiles by username.")
@@ -267,96 +249,117 @@ def main():
         output_file = args.output or "results.txt"
         include_nsfw = args.nsfw
     else:
-        clear_screen()
+        console.clear()
         print_banner()
         output_file = args.output
         if not output_file:
-            answer = input(
-                f"{Fore.CYAN}Save results to file (Enter for default 'results.txt'): {Style.RESET_ALL}"
-            ).strip()
-            output_file = answer if answer else "results.txt"
+            output_file = Prompt.ask("[cyan]Save results to file[/cyan]", default="results.txt")
         include_nsfw = args.nsfw
         if not include_nsfw:
-            answer = input(f"{Fore.CYAN}Include 18+/adult sites? (y/N): {Style.RESET_ALL}").strip().lower()
-            include_nsfw = answer == "y"
+            include_nsfw = Confirm.ask("[cyan]Include 18+/adult sites?[/cyan]", default=False)
 
     sites = all_sites if include_nsfw else [s for s in all_sites if not s.get("nsfw")]
+    sites_sorted = sorted(sites, key=lambda s: s["name"].lower())
 
     while True:
-        clear_screen()
+        console.clear()
         print_banner()
 
         if args.username:
             username_to_check = args.username
         else:
-            username_to_check = input(f"{Fore.CYAN}Target Username : {Style.RESET_ALL}").strip()
+            username_to_check = Prompt.ask("[cyan]Target Username[/cyan]").strip()
 
         if not username_to_check:
-            print(f"{Fore.RED}Please enter a username.{Style.RESET_ALL}")
+            console.print("[red]Please enter a username.[/red]")
             time.sleep(1)
             continue
 
         if any(c in FORBIDDEN_CHARS for c in username_to_check):
-            print(f"{Fore.RED}Error: The username contains unwanted characters ({FORBIDDEN_CHARS}){Style.RESET_ALL}")
+            console.print(f"[red]Error: The username contains unwanted characters ({FORBIDDEN_CHARS})[/red]")
             time.sleep(2)
             if args.username: break
             continue
 
-        spinner(f"Preparing scan for '{username_to_check}'", duration=0.8)
-        print(f"{Fore.YELLOW}Checking availability for '{username_to_check}' on {len(sites)} sites...{Style.RESET_ALL}\n")
+        console.print(f"[yellow]Checking availability for '{username_to_check}' on {len(sites)} sites...[/yellow]\n")
 
         results_list = []
         found_sites = []
         available_sites = []
         error_sites = []
-        total_sites = len(sites)
-        done = 0
+        pending = object()
+        status_by_name = {s["name"]: pending for s in sites_sorted}
+
+        def render_table():
+            table = Table(show_header=False, box=box.SIMPLE_HEAVY, padding=(0, 1), expand=False)
+            columns = 3
+            for _ in range(columns):
+                table.add_column(justify="left")
+                table.add_column(justify="left")
+            names = [s["name"] for s in sites_sorted]
+            rows_per_col = -(-len(names) // columns)
+            for row_index in range(rows_per_col):
+                row_cells = []
+                for col in range(columns):
+                    i = col * rows_per_col + row_index
+                    if i < len(names):
+                        name = names[i]
+                        status = status_by_name[name]
+                        if status is pending:
+                            row_cells.extend([name, PENDING_LABEL])
+                        else:
+                            row_cells.extend([name, STATUS_LABELS[status]])
+                    else:
+                        row_cells.extend(["", ""])
+                table.add_row(*row_cells)
+            return table
 
         with ThreadPoolExecutor(max_workers=15) as executor:
             futures = {executor.submit(check_site, site, username_to_check, session): site for site in sites}
-            for future in as_completed(futures):
-                site_name, status, url = future.result()
-                results_list.append((site_name, status, url))
-                done += 1
+            with Live(render_table(), console=console, refresh_per_second=8) as live:
+                for future in as_completed(futures):
+                    site_name, status, url = future.result()
+                    results_list.append((site_name, status, url))
+                    status_by_name[site_name] = status
 
-                if status is True:
-                    found_sites.append(site_name)
-                elif status is False:
-                    available_sites.append(site_name)
-                else:
-                    error_sites.append(site_name)
+                    if status is True:
+                        found_sites.append(site_name)
+                    elif status is False:
+                        available_sites.append(site_name)
+                    else:
+                        error_sites.append(site_name)
 
-                print_status_line(site_name, status, done, total_sites)
+                    live.update(render_table())
 
         # Summary
-        print_summary_box(f"SUMMARY FOR '{username_to_check}'")
+        console.print()
+        console.print(Panel(f"SUMMARY FOR '{username_to_check}'", style="bold cyan", box=box.DOUBLE))
 
         if found_sites:
-            print(f"\n{Fore.GREEN}{Style.BRIGHT}[+] FOUND ACCOUNTS: {len(found_sites)}{Style.RESET_ALL}")
-            print(f"{Fore.GREEN}{', '.join(found_sites)}{Style.RESET_ALL}")
+            console.print(f"\n[bold green][+] FOUND ACCOUNTS: {len(found_sites)}[/bold green]")
+            console.print(f"[green]{', '.join(found_sites)}[/green]")
 
         if available_sites:
-            print(f"\n{Fore.RED}[-] NOT FOUND (Available?): {len(available_sites)}{Style.RESET_ALL}")
-            # print(f"{Fore.RED}{', '.join(available_sites)}{Style.RESET_ALL}") # Optional: Don't clutter screen if too many
+            console.print(f"\n[red][-] NOT FOUND (Available?): {len(available_sites)}[/red]")
 
         if error_sites:
-             print(f"\n{Fore.YELLOW}[~] UNCERTAIN (network error or unreliable site): {len(error_sites)}{Style.RESET_ALL}")
-             print(f"{Fore.YELLOW}{', '.join(error_sites)}{Style.RESET_ALL}")
+            console.print(f"\n[yellow][~] UNCERTAIN (network error or unreliable site): {len(error_sites)}[/yellow]")
+            console.print(f"[yellow]{', '.join(error_sites)}[/yellow]")
 
         save_results(results_list, username_to_check, output_file)
 
         if args.username:
             break
 
-        print("\n")
-        choice = input(f"{Fore.CYAN}Check another username? (Y/n) > {Style.RESET_ALL}").lower()
+        console.print()
+        choice = Prompt.ask("[cyan]Check another username? (Y/n)[/cyan]", default="y").strip().lower()
         if choice == 'n':
-            print("Goodbye!")
+            console.print("Goodbye!")
             break
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print(f"\n{Fore.RED}Aborted by user.{Style.RESET_ALL}")
+        console.print("\n[red]Aborted by user.[/red]")
         sys.exit(0)
