@@ -17,6 +17,7 @@ import json
 import random
 import string
 import sys
+import time
 
 from main import load_sites, create_session, check_site
 
@@ -73,6 +74,22 @@ def random_fake_username():
     return f"zzzzz-nonexistent-{suffix}"
 
 
+def check_with_retries(site, username, session, expect, attempts=3, delay=3):
+    """A one-off anti-bot block (e.g. a rotated User-Agent tripping a
+    site's Cloudflare check) looks identical to a genuinely broken
+    detection rule in a single try. Retry until the result matches what's
+    expected, and only give up after `attempts` — a real breakage fails
+    every time, a transient block usually doesn't."""
+    result = None
+    for attempt in range(attempts):
+        _, result, _ = check_site(site, username, session)
+        if result == expect:
+            return result
+        if attempt < attempts - 1:
+            time.sleep(delay)
+    return result
+
+
 def main():
     sites = load_sites()
     session = create_session()
@@ -91,7 +108,7 @@ def main():
             unreliable.append(name)
             continue
 
-        _, fake_status, _ = check_site(site, fake_username, session)
+        fake_status = check_with_retries(site, fake_username, session, expect=False)
         fake_ok = fake_status is False
 
         real_username = TEST_USERNAMES.get(name)
@@ -99,7 +116,7 @@ def main():
             untested.append(name)
             real_ok = None
         else:
-            _, real_status, _ = check_site(site, real_username, session)
+            real_status = check_with_retries(site, real_username, session, expect=True)
             real_ok = real_status is True
 
         if fake_status is None or (real_username and real_status is None):
@@ -149,6 +166,8 @@ def main():
     }
     with open("sites_verification_report.json", "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
+        f.write("\n")  # without this, the GitHub Actions workflow's heredoc
+        # export merges the last JSON line with the closing "EOF" marker
 
     sys.exit(1 if broken else 0)
 
